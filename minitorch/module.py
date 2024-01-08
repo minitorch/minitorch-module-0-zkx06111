@@ -29,35 +29,38 @@ class Module:
         m: Dict[str, Module] = self.__dict__["_modules"]
         return list(m.values())
 
-    def train(self) -> None:
+    def train(self):
         "Set the mode of this module and all descendent modules to `train`."
-        self.training = True
-        for module in self.modules():
-            module.train()
 
-    def eval(self) -> None:
+        def _train(module):
+            module.training = True
+            for m in module.modules():
+                _train(m)
+
+        _train(self)
+
+    def eval(self):
         "Set the mode of this module and all descendent modules to `eval`."
-        self.training = False
-        for module in self.modules():
-            module.eval()
 
-    def named_parameters(self):
+        def _eval(module):
+            module.training = False
+            for m in module.modules():
+                _eval(m)
+
+        _eval(self)
+
+    def named_parameters(self) -> Sequence[Tuple[str, Parameter]]:
         """
         Collect all the parameters of this module and its descendents.
 
 
         Returns:
-            list of pairs: Contains the name and :class:`Parameter` of each ancestor parameter.
+            The name and `Parameter` of each ancestor parameter.
         """
-
-        def _named_parameters(module, prefix=""):
-            for name, param in module._parameters.items():
-                yield prefix + name, param
-            for name, module in module._modules.items():
-                yield from _named_parameters(module, prefix + name + ".")
-
-        return list(_named_parameters(self))
-
+        params = list(self._parameters.items())
+        for name, module in self._modules.items():
+            params += [(name + "." + n, p) for n, p in module.named_parameters()]
+        return params
 
     def parameters(self) -> Sequence[Parameter]:
         "Enumerate over all the parameters of this module and its descendents."
