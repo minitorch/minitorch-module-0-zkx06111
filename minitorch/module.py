@@ -29,25 +29,17 @@ class Module:
         m: Dict[str, Module] = self.__dict__["_modules"]
         return list(m.values())
 
-    def train(self):
+    def train(self) -> None:
         "Set the mode of this module and all descendent modules to `train`."
+        self.training = True
+        for module in self.modules():
+            module.train()
 
-        def _train(module):
-            module.training = True
-            for m in module.modules():
-                _train(m)
-
-        _train(self)
-
-    def eval(self):
+    def eval(self) -> None:
         "Set the mode of this module and all descendent modules to `eval`."
-
-        def _eval(module):
-            module.training = False
-            for m in module.modules():
-                _eval(m)
-
-        _eval(self)
+        self.training = False
+        for module in self.modules():
+            module.eval()
 
     def named_parameters(self) -> Sequence[Tuple[str, Parameter]]:
         """

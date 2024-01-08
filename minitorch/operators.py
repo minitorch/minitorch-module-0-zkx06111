@@ -180,7 +180,7 @@ def reduce(
          $x_1 \ldots x_n$ and computes the reduction :math:`fn(x_3, fn(x_2,
          fn(x_1, x_0)))`
     """
-    return lambda ls: start if not ls else reduce(fn, fn(start, ls[0]))(ls[1:])
+    return lambda ls: start if len(ls) == 0 else reduce(fn, fn(start, ls[0]))(ls[1:])
     raise NotImplementedError("Need to implement for Task 0.3")
 
 
