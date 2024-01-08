@@ -41,18 +41,23 @@ class Module:
         for module in self.modules():
             module.eval()
 
-    def named_parameters(self) -> Sequence[Tuple[str, Parameter]]:
+    def named_parameters(self):
         """
         Collect all the parameters of this module and its descendents.
 
 
         Returns:
-            The name and `Parameter` of each ancestor parameter.
+            list of pairs: Contains the name and :class:`Parameter` of each ancestor parameter.
         """
-        params = list(self._parameters.items())
-        for name, module in self._modules.items():
-            params += [(name + "." + n, p) for n, p in module.named_parameters()]
-        return params
+
+        def _named_parameters(module, prefix=""):
+            for name, param in module._parameters.items():
+                yield prefix + name, param
+            for name, module in module._modules.items():
+                yield from _named_parameters(module, prefix + name + ".")
+
+        return list(_named_parameters(self))
+
 
     def parameters(self) -> Sequence[Parameter]:
         "Enumerate over all the parameters of this module and its descendents."
